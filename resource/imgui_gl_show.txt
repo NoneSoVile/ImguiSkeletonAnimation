@@ -1,0 +1,11 @@
+zRotation = 0
+usingGeoShader = 1
+lineWidth = 50
+enableGLMultisample=0
+//0: GL_TRIANGLES   1:  GL_LINE_STRIP_ADJACENCY  2:GL_POINTS  
+drawMode = 1
+input_video_file = E:\\videoDATA\\G05_086\\captured09091156\\
+drawGUI=1
+drawBG=1
+drawARSlot=1
+drawARGUI=1

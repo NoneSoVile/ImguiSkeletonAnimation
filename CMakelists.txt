@@ -1,0 +1,67 @@
+cmake_minimum_required( VERSION 3.0 )
+set( CMAKE_TOOLCHAIN_FILE "d:/vcpkg/vcpkg/scripts/buildsystems/vcpkg.cmake" )
+
+project(ImguiSkeletonAnimation)
+# set path of glfw3
+if( NOT CMAKE_CL_64 )
+  set(GLFW3_LIBS "D:/vcpkg/vcpkg/installed/x86-windows/lib/glfw3dll.lib")
+else()
+  set(GLFW3_LIBS "D:/vcpkg/vcpkg/installed/x64-windows/lib/glfw3dll.lib" )
+endif()
+
+
+
+include_directories(
+                    ${CMAKE_SOURCE_DIR}/include/imgui
+                    ${CMAKE_SOURCE_DIR}/include/kinematics
+)
+
+include("d:/vcpkg/vcpkg/scripts/buildsystems/vcpkg.cmake")
+# Find Package
+find_package( OpenCV REQUIRED )
+find_package( GLFW3 REQUIRED )
+find_package( GLEW REQUIRED )
+find_package( OpenGL REQUIRED )
+
+# Add source files
+file(GLOB_RECURSE SOURCE_FILES 
+   main.cpp
+	${CMAKE_SOURCE_DIR}/src/*.cpp)
+#	${CMAKE_SOURCE_DIR}/resource/*.cpp)
+	
+# Add header files
+file(GLOB_RECURSE HEADER_FILES 
+	${CMAKE_SOURCE_DIR}/include/*.h
+	${CMAKE_SOURCE_DIR}/include/imgui/*.h
+	${CMAKE_SOURCE_DIR}/include/*.hpp)
+	
+
+	
+# Add OpenCV headers location to your include paths
+include_directories(${OpenCV_INCLUDE_DIRS}
+                    ${OPENGL_INCLUDE_DIR} 
+                    ${GLEW_INCLUDE_DIRS}
+                    ${GLFW3_INCLUDE_DIRS}
+                    ${glm_INCLUDE_DIRS}
+                    ${CMAKE_SOURCE_DIR}/include
+					${CMAKE_SOURCE_DIR}/include/3dmodel_loader
+)
+
+
+
+
+# Define the executable
+add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
+
+
+# Put all libraries into a variable
+set(LIBS ${GLFW3_LIBS} ${OPENGL_LIBRARIES}  ${GLEW_LIBRARIES} ${OpenCV_LIBS})
+
+link_directories( ${OpenCV_LIB_DIR} )
+link_directories( ${GLFW3_LIB_DIR} )
+link_directories( ${GLEW_LIB_DIR} )
+
+
+link_directories( ${IMGPROC} )
+# Define the link libraries
+target_link_libraries(${PROJECT_NAME} ${LIBS} ${IMGPROC})

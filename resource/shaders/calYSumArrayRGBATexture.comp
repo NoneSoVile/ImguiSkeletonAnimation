@@ -1,0 +1,61 @@
+#version 430
+
+layout(local_size_x = 256) in; // Adjust local size as needed
+
+layout(binding = 0, std430) buffer InputBuffer {
+    float inputData[];
+};
+
+layout(binding = 1, std430) buffer singleGroupOutputBuffer {
+    float singleGroupOutputData[];
+};
+
+layout(binding = 2, std430) buffer OutputBuffer {
+    float outputData[];
+};
+
+//uniform uint inputDataSize;
+uniform uint numGroupX;
+shared float sharedData[gl_WorkGroupSize.x]; // Shared memory for each work group
+
+void main() {
+    uint groupId = gl_WorkGroupID.x;
+    uint localId = gl_LocalInvocationID.x;
+    uint globalId = gl_GlobalInvocationID.x;
+
+    //if(globalId < inputDataSize){
+    // Load data from global memory to shared memory
+        sharedData[localId] = inputData[globalId];
+        barrier();
+
+        // Perform parallel reduction in shared memory
+        /*for (uint stride = 1; stride < gl_WorkGroupSize.x; stride *= 2) {
+            if (localId % (2 * stride) == 0) {
+                sharedData[localId] += sharedData[localId + stride];
+            }
+            barrier();
+        }*/
+
+        uint stride = uint(gl_WorkGroupSize.x / 2u);
+        for (;  stride > 0; stride >>= 1u) {
+            if (localId < stride && (localId + stride) < gl_WorkGroupSize.x) {
+                sharedData[localId] += sharedData[localId + stride];
+            }
+                
+            barrier();
+        }
+
+        // Write the reduced sum to output buffer
+        if (localId == 0) {
+            singleGroupOutputData[groupId] = sharedData[0];
+        }
+        barrier();
+        if(globalId == 0){
+            for(uint i = 0; i < numGroupX; i++){
+                outputData[0] += singleGroupOutputData[i];   
+            }
+        }
+        
+    //}
+    
+}

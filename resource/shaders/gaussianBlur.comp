@@ -1,0 +1,37 @@
+#version 310 es
+layout (local_size_x = 16, local_size_y = 16) in;
+layout (rgba8ui, binding = 1) uniform readonly highp uimage2D srcTex;
+layout (rgba8ui, binding = 2) uniform writeonly highp uimage2D destTex;
+
+layout (std430, binding = 0) buffer KernelBuffer
+{
+    float kernel[];
+};
+
+uniform int kernel_W;
+uniform int kernel_H;
+uniform float time;
+void main() {
+    ivec2 dstPos = ivec2(gl_GlobalInvocationID.xy);
+    uvec4 c = imageLoad(srcTex, dstPos);
+
+    //
+    int halfW = kernel_W / 2;
+    int halfH = kernel_H / 2;
+
+    vec4 sumOfFilter = vec4(0.0);
+    for(int i = -halfW; i <= halfW; i++){
+        for(int j = -halfH; j <= halfH; j++){
+            ivec2 curPos = ivec2(dstPos.x + i, dstPos.y + j);
+            uvec4 curPixel = uvec4(0);
+            if(curPos.x >=0 && curPos.y >=0){
+                curPixel = imageLoad(srcTex, curPos);
+            }
+            
+            sumOfFilter += vec4(curPixel)*kernel[(i + halfW)*kernel_H + j + halfH];
+        }
+    }
+
+    //
+    imageStore(destTex, dstPos, uvec4(sumOfFilter));
+}
