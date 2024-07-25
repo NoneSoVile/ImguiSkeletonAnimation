@@ -8,6 +8,7 @@
 #include "Mesh3d.h"
 #include "WaterShader.h"
 #include "MatTester.h"
+#include "SkeletonAnimation.h"
 #include <GLFW/glfw3.h>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -138,7 +139,7 @@ int main(int, char**)
 	GeometryShaderTester geoShaderTester;
 	GaussianFilterShaderTester gaussianFilterTester;
 	PhysicsCurve curve;
-	Sprite2d sprite;
+	SkeletonAnimation sprite;
 	//Mesh3d sprite;
 	//WaterShader sprite;
 	//shaderTester.init();

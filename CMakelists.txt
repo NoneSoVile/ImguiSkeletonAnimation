@@ -14,6 +14,7 @@ endif()
 include_directories(
                     ${CMAKE_SOURCE_DIR}/include/imgui
                     ${CMAKE_SOURCE_DIR}/include/kinematics
+                    ${CMAKE_SOURCE_DIR}/include/skeleton
 )
 
 include("d:/vcpkg/vcpkg/scripts/buildsystems/vcpkg.cmake")
@@ -22,6 +23,11 @@ find_package( OpenCV REQUIRED )
 find_package( GLFW3 REQUIRED )
 find_package( GLEW REQUIRED )
 find_package( OpenGL REQUIRED )
+find_package(GLM REQUIRED)
+message(STATUS "GLM included at ${GLM_INCLUDE_DIR}")
+find_package(ASSIMP REQUIRED)
+message(STATUS "Found ASSIMP in ${ASSIMP_INCLUDE_DIR}")
+message(STATUS "Found ASSIMP LIB in ${ASSIMP_LIB_DIR}")
 
 # Add source files
 file(GLOB_RECURSE SOURCE_FILES 
@@ -54,13 +60,15 @@ include_directories(${OpenCV_INCLUDE_DIRS}
 add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
 
 
+SET(ASSIMP_LIB "D:/vcpkg/vcpkg/installed/x64-windows/lib/assimp-vc143-mt.lib")
+
 # Put all libraries into a variable
-set(LIBS ${GLFW3_LIBS} ${OPENGL_LIBRARIES}  ${GLEW_LIBRARIES} ${OpenCV_LIBS})
+set(LIBS ${GLFW3_LIBS} ${OPENGL_LIBRARIES}  ${GLEW_LIBRARIES} ${OpenCV_LIBS} ${ASSIMP_LIB})
 
 link_directories( ${OpenCV_LIB_DIR} )
 link_directories( ${GLFW3_LIB_DIR} )
 link_directories( ${GLEW_LIB_DIR} )
-
+link_directories( ${ASSIMP_LIB_DIR} )
 
 link_directories( ${IMGPROC} )
 # Define the link libraries
