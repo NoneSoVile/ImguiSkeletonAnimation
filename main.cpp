@@ -53,6 +53,8 @@ using cv::COLOR_RGB2BGRA;
 
 
 static void glfw_key(GLFWwindow* window, int32_t k, int32_t s, int32_t action, int32_t mods);
+static void glfw_mouse(GLFWwindow* window, int32_t button, int32_t action, int32_t mods);
+static void glfw_motion(GLFWwindow* window, double x, double y);
 void prepareKeyCodeRemap();
 void initScene();
 float screenW = WINDOW_WIDTH;
@@ -66,6 +68,7 @@ float startY =  0;
 bool runTester = false;
 bool drawTester = true;
 
+ShaderTester* shaderTesterObj = nullptr;
 
 // Main code
 int main(int, char**)
@@ -107,6 +110,9 @@ int main(int, char**)
 	glewExperimental = GL_TRUE;
 	glewInit();
 
+	glfwSetMouseButtonCallback(window, glfw_mouse);
+	glfwSetCursorPosCallback(window, glfw_motion);
+
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -145,8 +151,10 @@ int main(int, char**)
 	//shaderTester.init();
 	//geoShaderTester.init();
 	//gaussianFilterTester.init();
-	curve.init();
+	//curve.init();
 	sprite.init(screenW, screenH);
+
+	shaderTesterObj = &sprite;
 
 	// Main loop
 #ifdef __EMSCRIPTEN__
@@ -337,4 +345,133 @@ void prepareKeyCodeRemap() {
 	sKeyCodeRemap[GLFW_KEY_RIGHT_ALT] = Key::K_ALT_RIGHT;
 	sKeyCodeRemap[GLFW_KEY_RIGHT_SUPER] = Key::K_WINDOWS_RIGHT;
 	sKeyCodeRemap[GLFW_KEY_MENU] = Key::K_CONTEXT; // !!!TBD proper match?
+}
+
+
+
+
+bool resetMouse = false;
+static int32_t s_lastButton = 0;
+float prevTouchX, prevTouchY;
+float firstTouchX, firstTouchY;
+float firstTouchTime;
+bool bScrolling = false;
+bool isXScrolling = false;
+int lastState = GLFW_RELEASE;
+#define SCROLL_THRESHOLD 50
+static void glfw_motion(GLFWwindow* window, double x, double y)
+{
+	PointerEvent p;
+	p.m_x = (float)x;
+	p.m_y = (float)y;
+	float screenX = x;
+	float screenY = y;
+	p.m_device = InputDeviceType::MOUSE;
+	int lBState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+	if (lBState == GLFW_RELEASE) {
+		double curTime = getCurrentTimeSeconds();
+		float deltaTime = curTime - firstTouchTime;
+		//LOGI("deltaTime = %f  mFirstTouchTime = %f\n", deltaTime, firstTouchTime);
+		float deltaX = screenX - firstTouchX;
+		float deltaY = screenY - firstTouchY;
+		float dy = -deltaY * .002f / deltaTime;
+		float dx = deltaX * .001f / deltaTime;
+		//LOGI("ACTION_UP velocity vx = %f  vy = %f\n", dx, dy);
+
+		if (bScrolling) {
+			//onFling(dx, dy);
+		}
+		lastState = GLFW_RELEASE;
+
+	}
+	else if (lBState == GLFW_PRESS) {
+		if (lastState == GLFW_RELEASE) {
+			prevTouchX = firstTouchX = screenX;
+			prevTouchY = firstTouchY = screenY;
+			firstTouchTime = getCurrentTimeSeconds();
+
+			bScrolling = false;
+			LOGI("ACTION_DOWN velocity \n");
+		}
+		else if(lBState == GLFW_PRESS){
+			if (!bScrolling) {
+				float deltaX = abs(screenX - firstTouchX);
+				float deltaY = abs(screenY - firstTouchY);
+				bScrolling = (deltaX >= SCROLL_THRESHOLD) || (deltaY >= SCROLL_THRESHOLD);
+				if (!bScrolling) {
+					LOGI("ACTION_MOVE not scrolling\n");
+					prevTouchX = screenX;
+					prevTouchY = screenY;
+
+					return;
+				}
+				else {
+					LOGI("ACTION_MOVE scrolling started!!========\n");
+					isXScrolling = deltaX > deltaY ? true : false;
+				}
+			}
+			else {
+				LOGI("ACTION_MOVE is scrolling-------------->>>>\n");
+
+			}
+
+
+			float deltaX = screenX - prevTouchX;
+			float deltaY = screenY - prevTouchY;
+			float dx = deltaX ;
+			float dy = -deltaY ;
+
+			if (bScrolling) {
+				if (isXScrolling) {
+					dy = 0;
+				}
+				else {
+					dx = 0;
+				}
+				if (shaderTesterObj)
+				{
+					shaderTesterObj->onScroll(dx, dy);
+				}
+			}
+
+
+			else {
+				LOGI("Ignore touch event action : mouse move\n");
+			}
+			prevTouchX = screenX;
+			prevTouchY = screenY;
+		}
+		lastState = GLFW_PRESS;
+	}
+
+}
+
+static void glfw_mouse(GLFWwindow* window, int32_t button, int32_t action, int32_t mods)
+{
+	double x, y;
+	glfwGetCursorPos(window, &x, &y);
+	PointerEvent p;
+	p.m_x = (float)x;
+	p.m_y = (float)y;
+	float screenX = x;
+	float screenY = y;
+	
+	//if(action == GLUT_UP)
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+		
+
+    }
+    else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
+        p.m_id = MouseButton::MIDDLE;
+        //printf("GLFW_MOUSE_BUTTON_MIDDLE\n");
+    }
+
+    else {
+        p.m_id = MouseButton::RIGHT;
+        //printf("GLFW_MOUSE_BUTTON_RIGHT\n");
+    }
+	printf("mouse x = %d, y = %d\n", (int)x, (int)y);
+
+	//s_lastButton = p.m_id;
+	//if(sc)
 }

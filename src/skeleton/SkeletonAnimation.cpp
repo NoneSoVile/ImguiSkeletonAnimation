@@ -14,7 +14,7 @@ void SkeletonAnimation::loadShader(){
      /*create shaders
     */
     string vertexShaderFile = resourceFolder + std::string("shaders/anim_model.vs");
-    string fragShaderFile = resourceFolder + std::string("shaders/anim_model.fs");
+    string fragShaderFile = resourceFolder + std::string("shaders/basic3d.frag");
 
     renderShader = std::make_shared<SKShader>(vertexShaderFile.c_str(), fragShaderFile.c_str());
     //renderShader->(vertexShaderFile.c_str(), fragShaderFile.c_str());//geometryShaderFile.c_str()
@@ -29,7 +29,12 @@ void SkeletonAnimation::loadShader(){
 }
 
 void SkeletonAnimation::init(int w, int h) {
-
+	camera = Camera(glm::vec3(0.0f, 0.0f, 5.0f));
+	for (size_t i = 0; i < MAX_LIGHTS; i++)
+	{
+		lightPositions[i].z = 30;
+	}
+	
      /*create shaders
     */
     loadShader();
@@ -44,6 +49,8 @@ void SkeletonAnimation::init(int w, int h) {
 
 void SkeletonAnimation::loadMesh()
 {  
+    //vampire/dancing_vampire.dae"
+    //minecraft/minecraft.dae
     ourModel = new SKModel(("resource/models/vampire/dancing_vampire.dae"));
 	danceAnimation = new Animation(("resource/models/vampire/dancing_vampire.dae"), ourModel);
 	animator = new Animator(danceAnimation);
@@ -83,20 +90,60 @@ void SkeletonAnimation::updateUI(int w, int h) {
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
         ImGui::End();
     }
+
+	updateLightsUI(w, h);
+}
+
+void SkeletonAnimation::updateLightsUI(int w, int h)
+{
+#define LIGHT_SLIDER_POS_ARRAY(i, name) ImGui::SliderFloat3((string("light") + std::to_string(i) + " Position").c_str(), (float*)&name[i], -30, 30);
+#define LIGHT_SLIDER_COLOR_ARRAY(i, name) ImGui::SliderFloat3((string("light") + std::to_string(i) + " Color").c_str(), (float*)&name[i], 0, 1);
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::Begin("Lighting, world!", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground);
+    ImGui::Text("3D light Settings");
+
+   	ImGui::Checkbox("useTexture", &useTexture);
+    for (size_t i = 0; i < lightNum; i++)
+    {
+        LIGHT_SLIDER_POS_ARRAY(i, lightPositions);
+    }
+    for (size_t i = 0; i < lightNum; i++)
+    {
+        LIGHT_SLIDER_COLOR_ARRAY(i, lightColors);
+    }
+
+    ImGui::SliderFloat("alphaColor", (float *)&alphaColor, .0f, 1.0f);
+    ImGui::SliderFloat("diffusePower", (float *)&model_diffusePower, .0f, 12.0f);
+    ImGui::SliderFloat("specularPower", (float *)&model_specularPower, .0f, 1300.0f);
+    ImGui::SliderFloat("modelScale", (float*)&modelScale, .0f, 3.0f);
+
+    ImGui::SliderInt("lights", (int *)&lightNum, 0, MAX_LIGHTS);
+
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+    ImGui::End();
 }
 
 void SkeletonAnimation::run(float w, float h) {
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
     glDepthFunc(GL_LEQUAL);
-    Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+    
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
+	float specularPower = model_specularPower;
+    float diffusePower = model_diffusePower;
 
     glViewport(0, 0, w, h);
     animator->UpdateAnimation(deltaTime);
     renderShader->use();
+	renderShader->setFloat("specularPower", specularPower);
+    renderShader->setFloat("diffusePower", diffusePower);
+    renderShader->setInt("useTexture", useTexture);
+    renderShader->setInt("lightNum", lightNum);
+    renderShader->setVec3(("lights"), (float*)lightPositions, lightNum);
+    renderShader->setVec3("lights_Color", (float*)lightColors, lightNum);
+    //renderShader->setFloat("alphaColor", alphaColor);
 
     // view/projection transformations
     glm::mat4 projection = glm::perspective(1.0f, w / h, 0.1f, 100.0f);
@@ -112,9 +159,18 @@ void SkeletonAnimation::run(float w, float h) {
     // render the loaded model
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, -0.4f, 0.0f)); // translate it down so it's at the center of the scene
-    model = glm::scale(model, glm::vec3(.5f, .5f, .5f));	// it's a bit too big for our scene, so scale it down
+    model = glm::scale(model, glm::vec3(.5f, .5f, .5f)* modelScale);	// it's a bit too big for our scene, so scale it down
     renderShader->setMat4("model", model);
     ourModel->Draw(*renderShader);
 
     updateUI(w, h);
+}
+
+
+void SkeletonAnimation::onScroll(float dxScreen, float dyScreen){
+	camera.RotateCameraByMouseMove(dxScreen, dyScreen);
+}
+
+void SkeletonAnimation::onFling(float vx, float vy){
+
 }

@@ -5,7 +5,14 @@
 using std::string;
 class Shader;
 #define MAX_RESULT_LEN 10
-class ShaderTester: public RenderState
+
+class MouseEvent{
+public:
+	virtual void onScroll(float dxScreen, float dyScreen){}
+	virtual void onFling(float vx, float vy){}
+};
+
+class ShaderTester: public RenderState, public MouseEvent
 {
 protected:
 

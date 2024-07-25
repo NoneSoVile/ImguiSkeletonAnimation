@@ -102,6 +102,38 @@ public:
         updateCameraVectors();
     }
 
+
+    void RotateCameraByMouseMove(float xoffset, float yoffset, GLboolean constrainPitch = true)
+    {
+        xoffset *= MouseSensitivity;
+        yoffset *= MouseSensitivity;
+
+        Yaw += xoffset;
+        Pitch += yoffset;
+
+        // make sure that when pitch is out of bounds, screen doesn't get flipped
+        if (constrainPitch)
+        {
+            if (Pitch > 89.0f)
+                Pitch = 89.0f;
+            if (Pitch < -89.0f)
+                Pitch = -89.0f;
+        }
+
+        // Calculate the new position of the camera around the target
+        glm::vec3 direction;
+        glm::vec3 target(0, 0, 0);
+        direction.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+        direction.y = sin(glm::radians(Pitch));
+        direction.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+        direction = glm::normalize(direction);
+
+        float distance = glm::distance(Position, target);
+        Position = target - direction * distance;
+        // update Front, Right and Up Vectors using the updated Euler angles
+        updateCameraVectors();
+    }
+
     // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
     void ProcessMouseScroll(float yoffset)
     {
