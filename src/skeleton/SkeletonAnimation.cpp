@@ -51,8 +51,8 @@ void SkeletonAnimation::loadMesh()
 {  
     //vampire/dancing_vampire.dae"
     //minecraft/minecraft.dae
-    ourModel = new SKModel(("resource/models/vampire/dancing_vampire.dae"));
-	danceAnimation = new Animation(("resource/models/vampire/dancing_vampire.dae"), ourModel);
+    ourModel = new SKModel(("resource/models/astro_max.dae"));
+	danceAnimation = new Animation(("resource/models/astro_max.dae"), ourModel);
 	animator = new Animator(danceAnimation);
 
 }
@@ -115,7 +115,7 @@ void SkeletonAnimation::updateLightsUI(int w, int h)
     ImGui::SliderFloat("alphaColor", (float *)&alphaColor, .0f, 1.0f);
     ImGui::SliderFloat("diffusePower", (float *)&model_diffusePower, .0f, 12.0f);
     ImGui::SliderFloat("specularPower", (float *)&model_specularPower, .0f, 1300.0f);
-    ImGui::SliderFloat("modelScale", (float*)&modelScale, .0f, 3.0f);
+    ImGui::SliderFloat("modelScale", (float*)&modelScale, .0f, 25.0f);
 
     ImGui::SliderInt("lights", (int *)&lightNum, 0, MAX_LIGHTS);
 

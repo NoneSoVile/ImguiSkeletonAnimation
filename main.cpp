@@ -422,12 +422,12 @@ static void glfw_motion(GLFWwindow* window, double x, double y)
 			float dy = -deltaY ;
 
 			if (bScrolling) {
-				if (isXScrolling) {
+				/*if (isXScrolling) {
 					dy = 0;
 				}
 				else {
 					dx = 0;
-				}
+				}*/
 				if (shaderTesterObj)
 				{
 					shaderTesterObj->onScroll(dx, dy);
