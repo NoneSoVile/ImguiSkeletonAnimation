@@ -40,6 +40,10 @@ protected:
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
 
+
+    //model loc, ori
+    // 
+    glm::vec3 modelTranslation;
         //light
     vec3f lightColors[MAX_LIGHTS];
     vec3f lightPositions[MAX_LIGHTS];

@@ -34,7 +34,7 @@ void SkeletonAnimation::init(int w, int h) {
 	{
 		lightPositions[i].z = 30;
 	}
-	
+    modelTranslation = glm::vec3(0.0f, -0.4f, 0.0f);
      /*create shaders
     */
     loadShader();
@@ -51,8 +51,11 @@ void SkeletonAnimation::loadMesh()
 {  
     //vampire/dancing_vampire.dae"
     //minecraft/minecraft.dae
-    ourModel = new SKModel(("resource/models/astro_max.dae"));
-	danceAnimation = new Animation(("resource/models/astro_max.dae"), ourModel);
+    //minecraft/minecraft.fbx
+    //skeleton.dae
+    //dae_Neck_Mech_Walker_by_3DHaupt/Neck_Mech_Walker_by_3DHaupt1.dae
+    ourModel = new SKModel(("resource/models/vampire/dancing_vampire.dae"));
+    danceAnimation = new Animation(("resource/models/vampire/dancing_vampire.dae"), ourModel);
 	animator = new Animator(danceAnimation);
 
 }
@@ -115,9 +118,11 @@ void SkeletonAnimation::updateLightsUI(int w, int h)
     ImGui::SliderFloat("alphaColor", (float *)&alphaColor, .0f, 1.0f);
     ImGui::SliderFloat("diffusePower", (float *)&model_diffusePower, .0f, 12.0f);
     ImGui::SliderFloat("specularPower", (float *)&model_specularPower, .0f, 1300.0f);
-    ImGui::SliderFloat("modelScale", (float*)&modelScale, .0f, 25.0f);
+    ImGui::SliderFloat("modelScale", (float*)&modelScale, .0f, 20.f);
 
     ImGui::SliderInt("lights", (int *)&lightNum, 0, MAX_LIGHTS);
+
+    ImGui::SliderFloat3("model translate", (float*)&modelTranslation, -20.f, 20.0f);
 
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
     ImGui::End();
@@ -158,7 +163,7 @@ void SkeletonAnimation::run(float w, float h) {
 
     // render the loaded model
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, -0.4f, 0.0f)); // translate it down so it's at the center of the scene
+    model = glm::translate(model, modelTranslation); // translate it down so it's at the center of the scene
     model = glm::scale(model, glm::vec3(.5f, .5f, .5f)* modelScale);	// it's a bit too big for our scene, so scale it down
     renderShader->setMat4("model", model);
     ourModel->Draw(*renderShader);

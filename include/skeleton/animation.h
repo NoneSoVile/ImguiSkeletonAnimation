@@ -28,6 +28,9 @@ public:
 		const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
 		assert(scene && scene->mRootNode);
 		auto animation = scene->mAnimations[0];
+		printf("mAnimations number is %d\n", scene->mNumAnimations);
+
+		//printf("mAnimations[0] name is %s\n", animation->mName);
 		m_Duration = animation->mDuration;
 		m_TicksPerSecond = animation->mTicksPerSecond;
 		aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
