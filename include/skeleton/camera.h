@@ -103,7 +103,7 @@ public:
     }
 
 
-    void RotateCameraByMouseMove(float xoffset, float yoffset, GLboolean constrainPitch = true)
+    void RotateCameraByMouseMove(float xoffset, float yoffset, glm::vec3 target= glm::vec3(0), GLboolean constrainPitch = true)
     {
         xoffset *= MouseSensitivity;
         yoffset *= MouseSensitivity;
@@ -122,7 +122,6 @@ public:
 
         // Calculate the new position of the camera around the target
         glm::vec3 direction;
-        glm::vec3 target(0, 0, 0);
         direction.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
         direction.y = sin(glm::radians(Pitch));
         direction.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));

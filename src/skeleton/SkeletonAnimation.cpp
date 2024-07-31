@@ -15,8 +15,9 @@ void SkeletonAnimation::loadShader(){
     */
     string vertexShaderFile = resourceFolder + std::string("shaders/anim_model.vs");
     string fragShaderFile = resourceFolder + std::string("shaders/basic3d.frag");
+    string geoShaderFile = resourceFolder + std::string("shaders/loop_subdivide.geom");
 
-    renderShader = std::make_shared<SKShader>(vertexShaderFile.c_str(), fragShaderFile.c_str());
+    renderShader = std::make_shared<SKShader>(vertexShaderFile.c_str(), fragShaderFile.c_str(), geoShaderFile.c_str());//
     //renderShader->(vertexShaderFile.c_str(), fragShaderFile.c_str());//geometryShaderFile.c_str()
     if (!renderShader->isValid()) {
         printf("failed to create shader: %s\n", vertexShaderFile.c_str());
@@ -122,8 +123,10 @@ void SkeletonAnimation::updateLightsUI(int w, int h)
 
     ImGui::SliderInt("lights", (int *)&lightNum, 0, MAX_LIGHTS);
 
-    ImGui::SliderFloat3("model translate", (float*)&modelTranslation, -20.f, 20.0f);
-
+    bool ret = ImGui::SliderFloat3("model translate", (float*)&modelTranslation, -20.f, 20.0f);
+    if (ret) {
+        camera.RotateCameraByMouseMove(0, 0, modelTranslation);
+    }
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
     ImGui::End();
 }
@@ -173,7 +176,7 @@ void SkeletonAnimation::run(float w, float h) {
 
 
 void SkeletonAnimation::onScroll(float dxScreen, float dyScreen){
-	camera.RotateCameraByMouseMove(dxScreen, dyScreen);
+	camera.RotateCameraByMouseMove(dxScreen, dyScreen, modelTranslation);
 }
 
 void SkeletonAnimation::onFling(float vx, float vy){

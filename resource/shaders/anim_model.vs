@@ -23,6 +23,10 @@ out highp vec4 vPosition;
 out highp vec4 vPositionMV;
 out highp vec3 vNormal;
 out highp vec3 vNormalMV;
+out VS_OUT {
+    vec3 normal;
+    vec2 vTexCoord;
+} vs_out;
 
 void main()
 {
@@ -48,7 +52,11 @@ void main()
     vec4 p = viewModel*position4;
     vPosition = position4;
     vNormal = norm;
+    vs_out.normal = norm;
+    vs_out.vTexCoord = tex;
     vTexCoord = tex;
     vPositionMV = p;
-    vNormalMV = normalize(norm);
+    mat4 inverse_mv = transpose(inverse(viewModel));
+    vec3 n = (inverse_mv*vec4(vNormal, 0.0)).xyz;
+    vNormalMV = normalize(n);
 }
